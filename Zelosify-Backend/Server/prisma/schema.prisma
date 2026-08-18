@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String       @id @default(uuid())
+  username        String?      @unique 
+  email           String
+  firstName       String?
+  lastName        String?
+  phoneNumber     String?
+  department      String?
+  role            Role
+  tenantId        String?
+  externalId      String?      @unique 
+  totpSecret      String?
+  profileComplete Boolean      @default(false)
+  provider        AuthProvider @default(KEYCLOAK)
+  creator         String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Add the new optional token fields:
+  accessToken     String?
+  refreshToken    String?
+
+  // Relation to tenant
+  tenant          Tenants?     @relation(fields: [tenantId], references: [tenantId])
+
+  @@unique([email, provider])
+  @@index([tenantId])
+}
+
+model Tenants {
+  tenantId            String    @id @default(uuid())
+  companyName         String    @default("DemoTenant")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  users               User[]
+}
+
+enum AuthProvider {
+  KEYCLOAK
+  GOOGLE
+  MICROSOFT
+}
+
+enum Role {
+  ADMIN
+  BUSINESS_APPROVER
+  BUSINESS_USER
+  FINANCE_MANAGER
+  HIRING_MANAGER
+  IT_VENDOR
+  PROCUREMENT_MANAGER
+  RESOURCE_MANAGER
+  VENDOR_MANAGER
+}

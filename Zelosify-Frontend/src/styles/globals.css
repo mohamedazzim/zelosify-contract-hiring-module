@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* light theme */
+:root {
+  --background: #ffffff; /* plain-white */
+  --foreground: #000000; /* plain-black */
+  --primary: #1f2937; /* slate-800 */
+  --secondary: #4b5563; /* gray-600 */
+  --tertiary: #ffffff; /* plain-white */
+  --border: #e2e8f0; /* gray-200 */
+  --ring: #2563eb; /* blue-600 */
+  --focus: #2563eb; /* blue-600 */
+  --chart-line: #000; /* plain-black */
+  --table-header: #f9fafb; /* gray-50 */
+  --scroll-bar: #d1d5db; /* gray-300 */
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary-foreground: 210 40% 98%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: #1f2937; /* slate-800 */
+  --accent: #f3f4f6; /* gray-100 */
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: #dc2626;
+  --chart-1: 220 70% 50%; /* Light Blue */
+  --chart-2: 160 60% 45%; /* Light Green */
+  --chart-3: 30 80% 55%; /* Light Coral */
+  --chart-4: 280 65% 60%; /* Lavender */
+  --chart-5: 340 75% 55%; /* Salmon */
+  --chart-6: 0 100% 50%; /* Red */
+  --chart-7: 120 100% 50%; /* Green */
+  --chart-8: 240 100% 50%; /* Blue */
+  --chart-9: 60 100% 50%; /* Yellow */
+  --chart-10: 300 100% 50%; /* Magenta */
+  --chart-11: 180 100% 50%; /* Cyan */
+  --chart-12: 0 0% 50%; /* Gray */
+  --radius: 0.5rem;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+/* dark theme */
+.dark {
+  --background: #111827; /* slate-900 */
+  --foreground: #f8fafc; /* slate-100 */
+  --primary: #cbd5e1; /* slate-300 */
+  --secondary: #9ca3af; /* gray-400 */
+  --tertiary: #000000; /* plain-black */
+  --border: #374151; /* gray-700 */
+  --ring: #2563eb; /* blue-600 */
+  --focus: #2563eb; /* blue-600 */
+  --chart-line: #fff; /* plain-white */
+  --table-header: #171f2b; /* gray-850 */
+  --scroll-bar: #4b5563; /* gray-600 */
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: #cbd5e1; /* slate-300 */
+  --accent: #1f2937; /* gray-800 */
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: #f87171;
+  --input: 217.2 32.6% 17.5%;
+  --chart-1: 220 70% 50%; /* Light Blue */
+  --chart-2: 160 60% 45%; /* Light Green */
+  --chart-3: 30 80% 55%; /* Light Coral */
+  --chart-4: 280 65% 60%; /* Lavender */
+  --chart-5: 340 75% 55%; /* Salmon */
+  --chart-6: 0 100% 50%; /* Red */
+  --chart-7: 120 100% 50%; /* Green */
+  --chart-8: 240 100% 50%; /* Blue */
+  --chart-9: 60 100% 50%; /* Yellow */
+  --chart-10: 300 100% 50%; /* Magenta */
+  --chart-11: 180 100% 50%; /* Cyan */
+  --chart-12: 0 0% 50%; /* Gray */
+  --radius: 0.5rem;
+  --sidebar-background: 240 5.9% 10%;
+  --sidebar-foreground: 240 4.8% 95.9%;
+  --sidebar-primary: 224.3 76.3% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 240 4.8% 95.9%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217.2 91.2% 59.8%;
+}
+
+.recharts-bar-rectangle:hover {
+  fill: none; /* Remove the fill color */
+}
+
+html {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-weight: 500; /* Optional default weight */
+  font-size: medium;
+  font-style: normal; /* Optional default style */
+}
+
+/* this is for testimonial section  */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+}
+
+/* this is for contact section  */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* for background banner  */
+
+/* In your Tailwind CSS configuration (e.g., styles.css) */
+.scroll-mt-40 {
+  scroll-margin-top: 40px;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+.overflow-hidden {
+  overflow: hidden;
+}
+
+/* this is for scroll bar  */
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 0.3rem;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background: var(--scroll-bar);
+  transition: all 0.5s ease-in-out;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+/* Resusable classes */
+@layer components {
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
+  .cancel-red {
+    @apply text-red-600 dark:text-red-400;
+  }
+}
+
+/* Animation delays for typing indicator */
+@layer utilities {
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+}
