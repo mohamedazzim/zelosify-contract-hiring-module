@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/UI/shadcn/skeleton";
 import EmptyState from "@/components/common/EmptyState";
 import ErrorComponent from "@/components/common/ErrorComponent";
+import VirtualizedTable from "@/components/common/VirtualizedTable";
 import Pagination from "./Pagination";
 
 const formatDate = (iso) => {
@@ -113,44 +114,40 @@ export default function OpeningsLayout() {
 
           {!loading && !error && openings.length > 0 && (
             <>
-              <div className="border border-border rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="px-4 py-3">Title</TableHead>
-                      <TableHead className="px-4 py-3">Location</TableHead>
-                      <TableHead className="px-4 py-3">Contract Type</TableHead>
-                      <TableHead className="px-4 py-3">Posted Date</TableHead>
-                      <TableHead className="px-4 py-3">Hiring Manager</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {openings.map((opening) => (
-                      <TableRow
-                        key={opening.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleRowClick(opening.id)}
-                      >
-                        <TableCell className="px-4 py-3 text-sm text-foreground font-medium">
-                          {opening.title}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-sm text-foreground">
-                          {opening.location || "—"}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-sm text-foreground">
-                          {opening.contractType || "—"}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-sm text-foreground">
-                          {formatDate(opening.postedDate)}
-                        </TableCell>
-                        <TableCell className="px-4 py-3 text-sm text-foreground">
-                          {opening.hiringManager?.name || "—"}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+              <VirtualizedTable
+                rows={openings}
+                rowKey="id"
+                onRowClick={(row) => handleRowClick(row.id)}
+                columns={[
+                  {
+                    key: "title",
+                    header: "Title",
+                    cell: (o) => (
+                      <span className="font-medium text-foreground">{o.title}</span>
+                    ),
+                  },
+                  {
+                    key: "location",
+                    header: "Location",
+                    cell: (o) => o.location || "—",
+                  },
+                  {
+                    key: "contractType",
+                    header: "Contract Type",
+                    cell: (o) => o.contractType || "—",
+                  },
+                  {
+                    key: "postedDate",
+                    header: "Posted Date",
+                    cell: (o) => formatDate(o.postedDate),
+                  },
+                  {
+                    key: "hiringManager",
+                    header: "Hiring Manager",
+                    cell: (o) => o.hiringManager?.name || "—",
+                  },
+                ]}
+              />
 
               <Pagination
                 page={pagination.page}

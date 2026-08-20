@@ -45,6 +45,8 @@ model Tenants {
 
   users               User[]
   openings            Opening[]
+  digitalInitiatives  DigitalInitiative[]
+  vendorRequests      VendorRequest[]
 }
 
 model Opening {
@@ -162,4 +164,49 @@ enum Role {
   PROCUREMENT_MANAGER
   RESOURCE_MANAGER
   VENDOR_MANAGER
+}
+
+model DigitalInitiative {
+  id                    String   @id @default(uuid())
+  requestIdentifier     String   @unique
+  initiativeTitle       String
+  businessRationale     String
+  enterpriseResourceCount Int
+  resourceDuration      Int
+  successCriteria       Json
+  timeline              Json
+  additionalComments    String?
+  tenantId              String
+  userId                String
+  status                String   @default("SUBMITTED")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant                Tenants  @relation(fields: [tenantId], references: [tenantId])
+
+  @@index([tenantId])
+  @@index([userId])
+}
+
+model VendorRequest {
+  id                    String   @id @default(uuid())
+  requestIdentifier     String   @unique
+  title                 String
+  description           String?
+  requestedSkills       String[] @default([])
+  contractType          String?
+  location              String?
+  experienceMin         Int      @default(0)
+  experienceMax         Int?
+  resourceCount         Int      @default(1)
+  status                String   @default("OPEN")
+  vendorManagerId       String
+  tenantId              String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant                Tenants  @relation(fields: [tenantId], references: [tenantId])
+
+  @@index([tenantId])
+  @@index([vendorManagerId])
 }

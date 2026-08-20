@@ -20,6 +20,7 @@ import authRoutes from "./routers/auth/authRoute.js";
 import awsRouter from "./routers/aws/awsRoute.js";
 import vendorRoutes from "./routers/vendor/vendorRoutes.js";
 import hiringManagerRoutes from "./routers/hiring/hiringManagerRoutes.js";
+import initiativeRequestRoute from "./routers/form/initiativeRequestRoute.js";
 
 // Load environment variables from .env file
 dotenv.config();
@@ -87,6 +88,9 @@ async function startServer() {
 
     // Hiring manager routes
     app.use("/api/v1/hiring-manager", hiringManagerRoutes);
+
+    // Digital initiative requests (BUSINESS_USER)
+    app.use("/api/v1/digital-initiatives", initiativeRequestRoute);
 
     // Request debugging middleware - logs all incoming requests
     app.use((req, _, next) => {
