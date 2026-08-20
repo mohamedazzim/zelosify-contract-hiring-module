@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   checkAuthStatus,
   signOut,
@@ -31,18 +31,23 @@ const useAuth = () => {
   const pathname = usePathname();
 
   // Helper function to check if current path is an auth page
-  const isAuthPage = () => {
+  const isAuthPage = useCallback(() => {
     if (!pathname) return false;
     return !pathname.includes("/user");
-  };
+  }, [pathname]);
 
   // Check if we need to load user data from localStorage on initial mount
   useEffect(() => {
     // Skip auth check completely on auth pages
     if (!user && !isAuthPage()) {
-      handleCheckAuthStatus();
+      dispatch(
+        checkAuthStatus({
+          isAuthPage: isAuthPage(),
+          pathname,
+        })
+      );
     }
-  }, [pathname]);
+  }, [user, pathname, isAuthPage, dispatch]);
 
   /**
    * Dispatches the checkAuthStatus action to verify user authentication status.
