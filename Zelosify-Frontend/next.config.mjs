@@ -23,6 +23,17 @@ const nextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 5,
   },
+
+  // Redirect the exact root path to the login page (temporary, not cached)
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/login",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
