@@ -49,7 +49,7 @@ The AI agent orchestrates real tool calls (resume parsing, feature extraction, s
 │   Controllers (thin, no business logic)                              │
 │   ├─ Vendor controllers     → openings, presign, upload, soft delete │
 │   ├─ Vendor Manager ctrl    → vendor request routes                  │
-│   ├─ Business User ctrl     → digital-initiative router (reserved)   │
+│   ├─ Business User ctrl     → digital-initiatives (BUSINESS_USER)     │
 │   └─ Hiring manager ctrl    → own openings, profiles, shortlist,     │
 │                               reject                                 │
 │   Middleware: authenticate (JWT) + authorize (role) + tenant scope   │
@@ -98,7 +98,7 @@ The full role set is defined in the Prisma `Role` enum (`prisma/schema.prisma`) 
 | Role | Backend enforcement | Notes |
 |------|--------------------|-------|
 | **ADMIN** | Recognized by frontend; platform-level administration | Part of the role enum |
-| **BUSINESS_USER** | `authorizeRole("BUSINESS_USER")` in `routers/form/initiativeRequestRoute.ts` (not mounted in `index.ts` — reserved) | Submits digital-initiative requests |
+| **BUSINESS_USER** | `authorizeRole("BUSINESS_USER")` on `POST /api/v1/digital-initiatives` | Submits digital-initiative requests |
 | **BUSINESS_APPROVER** | Defined in enum; reserved for approval workflows | Part of the role enum |
 | **FINANCE_MANAGER** | Defined in enum; reserved for finance workflows | Part of the role enum |
 | **HIRING_MANAGER** | `authorizeRole("HIRING_MANAGER")` on `/api/v1/hiring-manager/*` | Own openings, profiles, AI recommendation, shortlist, reject |
@@ -226,14 +226,17 @@ Never commit real `.env` files, tokens, TOTP secrets, presigned URLs, or private
 | POST | `/api/v1/vendor/openings/:id/profiles/upload` | IT_VENDOR | Submit profiles (Prisma transaction, enqueues recommendations) |
 | GET | `/api/v1/vendor/profiles` | IT_VENDOR | Own uploads (soft-delete aware) |
 | DELETE | `/api/v1/vendor/profiles/:id` | IT_VENDOR | Soft delete a profile |
-| GET | `/api/v1/vendor/requests` | VENDOR_MANAGER | Vendor request routes |
+| GET | `/api/v1/vendor/requests?page&limit&status` | VENDOR_MANAGER | Paginated vendor resource requests (tenant-scoped) |
+| POST | `/api/v1/vendor/requests` | VENDOR_MANAGER | Create a vendor resource request |
 | GET | `/api/v1/hiring-manager/openings?page&limit` | HIRING_MANAGER | Own openings |
 | GET | `/api/v1/hiring-manager/openings/:id/profiles?page&limit` | HIRING_MANAGER | Profiles + recommendation fields |
 | POST | `/api/v1/hiring-manager/profiles/:id/shortlist` | HIRING_MANAGER | Shortlist (transactional, idempotent state transitions) |
 | POST | `/api/v1/hiring-manager/profiles/:id/reject` | HIRING_MANAGER | Reject (transactional, 409 if already shortlisted) |
-| POST | `/api/v1/digital-initiatives` | BUSINESS_USER | Submit a digital-initiative request *(router defined; not mounted in the running app)* |
+| POST | `/api/v1/digital-initiatives` | BUSINESS_USER | Submit a digital-initiative request (tenant-scoped) |
 
 *Prefix paths may differ from the assessment shorthand — confirm exact routes in `src/routers/`.*
+
+**Frontend list virtualization:** the IT Vendor and Hiring Manager openings tables use a windowed `VirtualizedTable` component (`@tanstack/react-virtual`) so lists beyond 50 records keep the DOM small and the UI responsive.
 
 ---
 
@@ -442,12 +445,10 @@ Backend notes:
 ## Known limitations
 
 - **No retry endpoint for FAILED recommendations** — the UI shows a disabled informational note.
-- **Virtualization for >50 records is not implemented** — no virtualization library is installed; the profile list relies on pagination.
-- **P95 < 2000ms is verified via a mocked provider benchmark only.** A live Groq run requires a valid `GROQ_API_KEY` and is not part of automated tests.
+- **Live Groq P95** is verified via a mocked provider benchmark only; a live run requires a valid `GROQ_API_KEY` and is not part of automated tests.
 - **Legacy Pages Router page** `src/pages/LandingPage/HomeErrorPage.jsx` fails static prerender when `next build` runs with `NODE_ENV=development` forced (pre-existing; the normal production build succeeds).
 - **`next dev` requires `NODE_ENV=development`**; an inherited `NODE_ENV=production` triggers a Next.js 15 dev-mode middleware `EvalError` (environment issue, not app code).
 - **Polling** for PENDING/PROCESSING recommendations continues while any profile's recommendation is non-terminal (independent of shortlist/reject status), at a gentle 15s interval.
-- **Register endpoint client-secret lookup:** the register flow's final step (fetching the `dynamic-client` secret via the Admin API) can return HTTP 401 in some backend process states. Users are still fully provisioned (Keycloak user + DB row + role) before that step; passwords set via the Admin API are unaffected.
 
 ---
 

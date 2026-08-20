@@ -87,27 +87,21 @@ export const createDigitalInitiative = async (
   // Generate a dynamic request identifier
   const requestIdentifier = `${Date.now()}-${uuidv4()}`;
 
-  // sendLogToLoki(`hello from initiative form `, {
-  //   app: "mern-app",
-  //   component: "node-backend",
-  //   environment: "production",
-  // });
-
-  // Save the new initiative request with tenant/user details derived from the authenticated request
-  // await prisma.digitalInitiativeRequest.create({
-  //   data: {
-  //     initiativeTitle,
-  //     businessRationale,
-  //     enterpriseResourceCount,
-  //     resourceDuration,
-  //     successCriteria,
-  //     timeline,
-  //     additionalComments,
-  //     tenantId: tenant.tenantId,
-  //     userId,
-  //     requestIdentifier,
-  //   },
-  // });
+  // Persist the initiative request with tenant/user derived from the authenticated request
+  await prisma.digitalInitiative.create({
+    data: {
+      requestIdentifier,
+      initiativeTitle,
+      businessRationale,
+      enterpriseResourceCount,
+      resourceDuration,
+      successCriteria: successCriteria as object,
+      timeline: timeline as object,
+      additionalComments,
+      tenantId: tenant.tenantId,
+      userId,
+    },
+  });
 
   const response: DigitalInitiativeResponse = {
     requestIdentifier,

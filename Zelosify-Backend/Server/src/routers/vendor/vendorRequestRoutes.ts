@@ -4,10 +4,7 @@ import { authenticateUser } from "../../middlewares/auth/authenticateMiddleware.
 import { authorizeRole } from "../../middlewares/auth/authorizeMiddleware.js";
 import {
   fetchRequestData,
-  // generatePresignedUrls,
-  // updateVendorRequest,
-  // uploadAttachment,
-  // deleteAttachment,
+  createVendorRequest,
 } from "../../controllers/controllers.js";
 
 /**
@@ -31,6 +28,17 @@ router.get(
   authenticateUser as RequestHandler,
   authorizeRole("VENDOR_MANAGER") as RequestHandler,
   fetchRequestData as any
+);
+
+/**
+ * POST /api/v1/vendor/requests
+ * @requires VENDOR_MANAGER role
+ */
+router.post(
+  "/",
+  authenticateUser as RequestHandler,
+  authorizeRole("VENDOR_MANAGER") as RequestHandler,
+  createVendorRequest as any
 );
 
 export default router;

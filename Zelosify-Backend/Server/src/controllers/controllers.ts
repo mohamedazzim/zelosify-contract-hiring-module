@@ -21,6 +21,7 @@ export { createDigitalInitiative } from "./form/initiativeRequestController.js";
 // Vendor resource requests
 export {
   fetchRequestData,
+  createVendorRequest,
 } from "./vendor/resourceRequest/vendorRequestController.js";
 
 // Vendor opening management (IT Vendor)
