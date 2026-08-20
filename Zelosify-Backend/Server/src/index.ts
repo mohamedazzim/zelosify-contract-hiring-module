@@ -13,6 +13,7 @@ import helmet from "helmet";
 
 // Database connection utilities
 import connectPrisma from "./utils/prisma/connectPrisma.js";
+import { recoverPendingAndStaleRecommendations } from "./services/ai/queue/startupRecovery.js";
 
 // Application route handlers organized by feature domain
 import authRoutes from "./routers/auth/authRoute.js";
@@ -37,6 +38,11 @@ async function startServer() {
 
     // Establish database connections
     await connectPrisma();
+
+    // Recover pending and stale recommendations asynchronously on boot
+    recoverPendingAndStaleRecommendations().catch((err) => {
+      console.error("[StartupRecovery] Failed to run recovery on boot:", err);
+    });
 
     // Security middleware for headers and protection
     app.use(helmet());

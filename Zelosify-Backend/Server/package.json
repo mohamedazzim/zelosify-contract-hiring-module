@@ -14,7 +14,9 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:reset": "prisma migrate reset",
     "test": "vitest --config vitest.config.ts",
-    "test:ui": "vitest --config vitest.config.ts --ui"
+    "test:ui": "vitest --config vitest.config.ts --ui",
+    "seed:openings": "tsx src/scripts/seedOpenings.ts",
+    "cleanup:test-data": "tsx scripts/cleanupTestData.ts"
   },
   "keywords": [],
   "author": "",
@@ -30,6 +32,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
+    "groq-sdk": "^1.5.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
@@ -50,13 +53,13 @@
     "@types/node": "^22.10.2",
     "@types/qrcode": "^1.5.5",
     "@types/uuid": "^10.0.0",
-    "@vitest/coverage-istanbul": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/coverage-istanbul": "^3.2.7",
+    "@vitest/ui": "^3.2.7",
     "nodemon": "^3.1.9",
     "prisma": "^6.3.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.2",
+    "tsx": "^4.23.12",
     "typescript": "^5.7.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.7"
   }
 }

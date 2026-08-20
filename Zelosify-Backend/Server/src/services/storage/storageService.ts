@@ -14,5 +14,5 @@ export abstract class StorageService {
 
   abstract listObjects(prefix: string): Promise<any[]>;
 
-  abstract getUploadURL(key: string): Promise<string>;
+  abstract getUploadURL(key: string, contentType?: string): Promise<string>;
 }

@@ -11,8 +11,13 @@ export default defineConfig({
       exclude: ["**/tests/**", "**/__tests__/**", "**/node_modules/**"],
     },
     include: ["**/tests/**/*.test.ts", "**/__tests__/**/*.test.ts"],
-    exclude: ["**/dist/**", "**/build/**", "**/node_modules/**"],
-    setupFiles: [],
+    exclude: [
+      "**/dist/**",
+      "**/build/**",
+      "**/node_modules/**",
+      "**/tests/performance/**",
+    ],
+    setupFiles: ["./tests/setup/testIsolationGuard.ts"],
   },
   resolve: {
     alias: {

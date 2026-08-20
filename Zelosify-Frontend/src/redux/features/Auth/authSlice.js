@@ -71,7 +71,7 @@ export const checkAuthStatus = createAsyncThunk(
 
       // No user in localStorage, make a single API call to fetch user data
       try {
-        const response = await axiosInstance.get("/auth/user");
+        const response = await axiosInstance.get("/api/v1/auth/user");
         // Save the user data to localStorage
         saveUserToStorage(response.data);
         authCheckInProgress = false;
@@ -93,7 +93,7 @@ export const loginWithCredentials = createAsyncThunk(
   "auth/loginWithCredentials",
   async ({ usernameOrEmail, password }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/verify-login", {
+      const response = await axiosInstance.post("/api/v1/auth/verify-login", {
         usernameOrEmail,
         password,
       });
@@ -111,7 +111,7 @@ export const verifyTOTP = createAsyncThunk(
   "auth/verifyTOTP",
   async ({ totp }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/auth/verify-totp", {
+      const response = await axiosInstance.post("/api/v1/auth/verify-totp", {
         totp,
       });
       // Save the user data to localStorage after successful TOTP verification
@@ -131,7 +131,7 @@ export const signOut = createAsyncThunk(
   "auth/signOut",
   async (_, { dispatch, rejectWithValue }) => {
     try {
-      await axiosInstance.post("/auth/logout");
+      await axiosInstance.post("/api/v1/auth/logout");
       dispatch(logout());
       return "/user"; // Return the navigation path
     } catch (error) {

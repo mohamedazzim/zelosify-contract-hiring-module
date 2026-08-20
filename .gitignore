@@ -70,6 +70,21 @@ web_modules/
 .env.*
 !.env.example
 
+# Agent workspace / tooling state (never submit)
+.agents/
+.commandcode/
+
+# Assessment artifacts (never submit)
+*.docx
+*.pdf
+
+# Scratch diagnostic artifacts
+agentRunDiag.*
+scratchpad/
+temp-token.json
+admin-token.json
+token.txt
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

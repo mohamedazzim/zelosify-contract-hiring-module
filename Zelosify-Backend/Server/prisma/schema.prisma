@@ -44,6 +44,106 @@ model Tenants {
   updatedAt           DateTime  @updatedAt
 
   users               User[]
+  openings            Opening[]
+}
+
+model Opening {
+  id                      String   @id @default(uuid())
+  tenantId                String
+  title                   String
+  description             String?
+  location                String?
+  contractType            String?
+  hiringManagerId         String
+  experienceMin           Int
+  experienceMax           Int?
+  requiredSkills          String[] @default([])
+  postedDate              DateTime @default(now())
+  expectedCompletionDate  DateTime?
+  actionDate              DateTime?
+  status                  OpeningStatus @default(OPEN)
+
+  tenant                  Tenants @relation(fields: [tenantId], references: [tenantId])
+  hiringProfiles          hiringProfile[]
+
+  @@index([tenantId])
+}
+
+model hiringProfile {
+  id                        Int       @id @default(autoincrement())
+  openingId                 String
+  s3Key                     String    @unique
+  uploadedBy                String
+  submittedAt               DateTime  @default(now())
+  status                    ProfileStatus  @default(SUBMITTED)
+
+  shortlistedBy             String?
+  shortlistedAt             DateTime?
+  rejectedBy                String?
+  rejectedAt                DateTime?
+
+  recommended               Boolean?
+  recommendationScore       Float?
+  recommendationReason      String?
+  recommendationLatencyMs   Int?
+  recommendationVersion     String?
+  recommendationConfidence  Float?
+  recommendedAt             DateTime?
+  recommendationStatus      RecommendationStatus @default(PENDING)
+  recommendationAttemptCount Int    @default(0)
+
+  isDeleted                 Boolean    @default(false)
+
+  opening                   Opening    @relation(fields: [openingId], references: [id])
+  agentRuns                 AgentRun[]
+
+  @@index([openingId])
+  @@index([recommended])
+  @@index([recommendationStatus])
+}
+
+model AgentRun {
+  id               String    @id @default(uuid())
+  profileId        Int
+  provider         String
+  model            String
+  startedAt        DateTime
+  completedAt      DateTime?
+  status           String
+  retryCount       Int       @default(0)
+  latencyMs        Int?
+  promptTokens     Int       @default(0)
+  completionTokens Int       @default(0)
+  totalTokens      Int       @default(0)
+  toolInvocations  Json
+  structuredOutput Json?
+  errorCode        String?
+  errorMessage     String?
+  createdAt        DateTime  @default(now())
+
+  profile hiringProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([status])
+}
+
+enum RecommendationStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum OpeningStatus {
+  OPEN
+  CLOSED
+  ON_HOLD
+}
+
+enum ProfileStatus {
+  SUBMITTED
+  SHORTLISTED
+  REJECTED
 }
 
 enum AuthProvider {

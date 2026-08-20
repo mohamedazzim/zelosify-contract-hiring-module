@@ -1,4 +1,4 @@
-// awsStorageService.ts
+﻿// awsStorageService.ts
 
 import {
   S3Client,
@@ -20,7 +20,6 @@ export class AwsStorageService extends StorageService {
   constructor() {
     super();
 
-    // Ensure required environment variables are present
     const region = process.env.S3_AWS_REGION;
     const accessKeyId = process.env.S3_ACCESS_KEY_ID;
     const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
@@ -30,33 +29,29 @@ export class AwsStorageService extends StorageService {
       throw new Error("Missing required AWS S3 configuration");
     }
 
+    // S3_ENDPOINT allows local MinIO/LocalStack in dev; falls back to real AWS
+    const endpoint = process.env.S3_ENDPOINT || ("https://s3." + region + ".amazonaws.com");
+
     this.s3Client = new S3Client({
       region,
-      credentials: {
-        accessKeyId,
-        secretAccessKey,
-      },
-      endpoint: `https://s3.${region}.amazonaws.com`,
+      credentials: { accessKeyId, secretAccessKey },
+      endpoint,
       forcePathStyle: true,
     });
 
     this.bucket = bucketName;
 
-    // Log configuration (without sensitive data)
     console.log("[AWS S3] Initialized with:", {
       region,
       bucket: bucketName,
-      endpoint: `https://s3.${region}.amazonaws.com`,
+      endpoint,
       hasCredentials: !!accessKeyId && !!secretAccessKey,
     });
   }
 
   async getObjectURL(key: string): Promise<string> {
     try {
-      const command = new GetObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-      });
+      const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
       return await getSignedUrl(this.s3Client, command, {
         expiresIn: 3600,
         signableHeaders: new Set(["host"]),
@@ -69,30 +64,13 @@ export class AwsStorageService extends StorageService {
 
   async getObjectStream(key: string): Promise<Readable> {
     try {
-      console.log("[AWS S3] Getting object stream for:", {
-        bucket: this.bucket,
-        key,
-      });
-
-      const command = new GetObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-      });
-
+      console.log("[AWS S3] Getting object stream for:", { bucket: this.bucket, key });
+      const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
       const response = await this.s3Client.send(command);
-
-      if (!response.Body) {
-        throw new Error("No body returned from S3 object");
-      }
-
-      // AWS SDK v3 returns a ReadableStream, convert to Node.js Readable if needed
+      if (!response.Body) throw new Error("No body returned from S3 object");
       const body = response.Body;
-      if (body instanceof Readable) {
-        return body;
-      } else {
-        // Handle other stream types (like ReadableStream from web streams)
-        return Readable.fromWeb(body as any);
-      }
+      if (body instanceof Readable) return body;
+      return Readable.fromWeb(body as any);
     } catch (error) {
       console.error("[AWS S3] Error getting object stream:", error);
       throw error;
@@ -106,10 +84,7 @@ export class AwsStorageService extends StorageService {
   ): Promise<{ message: string }> {
     try {
       const command = new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: file,
-        ContentType: contentType,
+        Bucket: this.bucket, Key: key, Body: file, ContentType: contentType,
       });
       await this.s3Client.send(command);
       return { message: "File uploaded successfully" };
@@ -121,10 +96,7 @@ export class AwsStorageService extends StorageService {
 
   async listObjects(prefix: string): Promise<any[]> {
     try {
-      const command = new ListObjectsV2Command({
-        Bucket: this.bucket,
-        Prefix: prefix,
-      });
+      const command = new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix });
       const response = await this.s3Client.send(command);
       return response.Contents || [];
     } catch (error) {
@@ -133,25 +105,18 @@ export class AwsStorageService extends StorageService {
     }
   }
 
-  async getUploadURL(key: string): Promise<string> {
+  async getUploadURL(key: string, contentType = "application/pdf"): Promise<string> {
     try {
       console.log("[AWS S3] Generating upload URL for:", {
-        bucket: this.bucket,
-        key,
-        region: process.env.S3_AWS_REGION,
+        bucket: this.bucket, key, contentType, region: process.env.S3_AWS_REGION,
       });
-
       const command = new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        ContentType: "application/pdf",
+        Bucket: this.bucket, Key: key, ContentType: contentType,
       });
-
       const url = await getSignedUrl(this.s3Client, command, {
         expiresIn: 3600,
         signableHeaders: new Set(["host"]),
       });
-
       console.log("[AWS S3] Generated upload URL successfully");
       return url;
     } catch (error) {
