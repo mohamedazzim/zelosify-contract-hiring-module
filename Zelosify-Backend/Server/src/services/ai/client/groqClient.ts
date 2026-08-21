@@ -50,7 +50,7 @@ export interface GroqClientOptions {
   defaultTimeoutMs?: number;
 }
 
-const DEFAULT_GROQ_MODEL = "llama-3.3-70b-versatile";
+const DEFAULT_GROQ_MODEL = "qwen/qwen3.6-27b"; // Qwen model with tool calling support
 const DEFAULT_REQUEST_TIMEOUT_MS = 12000;
 
 export class GroqLlmClient implements LlmClient {
@@ -68,7 +68,7 @@ export class GroqLlmClient implements LlmClient {
       );
     }
 
-    this.defaultModel = options.defaultModel || process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL;
+    this.defaultModel = options.defaultModel || process.env.GROQ_RECOMMENDATION_MODEL || process.env.GROQ_MODEL || DEFAULT_GROQ_MODEL;
     this.defaultTimeoutMs = options.defaultTimeoutMs || DEFAULT_REQUEST_TIMEOUT_MS;
 
     this.client = new Groq({
@@ -187,7 +187,7 @@ export class GroqLlmClient implements LlmClient {
           tools: groqTools,
           tool_choice: groqTools && groqTools.length > 0 ? "auto" : undefined,
           temperature: request.temperature ?? 0.1,
-          max_tokens: request.maxTokens ?? 1024,
+          max_tokens: request.maxTokens ?? 512, // Reduced from1024 for faster response
         },
         {
           signal: controller.signal,

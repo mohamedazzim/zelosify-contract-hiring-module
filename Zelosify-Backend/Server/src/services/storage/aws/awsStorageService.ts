@@ -15,6 +15,7 @@ dotenv.config();
 
 export class AwsStorageService extends StorageService {
   private s3Client: S3Client;
+  private internalS3Client: S3Client;
   private bucket: string;
 
   constructor() {
@@ -29,20 +30,23 @@ export class AwsStorageService extends StorageService {
       throw new Error("Missing required AWS S3 configuration");
     }
 
-    // S3_ENDPOINT allows local MinIO/LocalStack in dev; falls back to real AWS
+    // S3_ENDPOINT: public endpoint for presigned URLs (browser-facing)
     const endpoint = process.env.S3_ENDPOINT || ("https://s3." + region + ".amazonaws.com");
+    // S3_INTERNAL_ENDPOINT: internal endpoint for backend S3 operations (server-facing)
+    // Falls back to S3_ENDPOINT if not set (local dev, real AWS, or when public endpoint is reachable)
+    const internalEndpoint = process.env.S3_INTERNAL_ENDPOINT || endpoint;
 
-    this.s3Client = new S3Client({
+    const clientConfig = {
       region,
       credentials: { accessKeyId, secretAccessKey },
-      endpoint,
-      forcePathStyle: true,
-      // AWS SDK v3.700+ defaults to adding x-amz-checksum-* query params to
-      // presigned URLs (WHEN_SUPPORTED). MinIO validates those checksums and
-      // rejects the placeholder value, causing SignatureDoesNotMatch. Restore
-      // the legacy behavior: only send checksums when the caller requires them.
-      requestChecksumCalculation: "WHEN_REQUIRED",
-    });
+      forcePathStyle: true as const,
+      requestChecksumCalculation: "WHEN_REQUIRED" as const,
+    };
+
+    // Client for presigned URLs (browser uploads/downloads)
+    this.s3Client = new S3Client({ ...clientConfig, endpoint });
+    // Client for backend operations (AI agent resume fetching, etc.)
+    this.internalS3Client = new S3Client({ ...clientConfig, endpoint: internalEndpoint });
 
     this.bucket = bucketName;
 
@@ -50,6 +54,7 @@ export class AwsStorageService extends StorageService {
       region,
       bucket: bucketName,
       endpoint,
+      internalEndpoint: internalEndpoint !== endpoint ? internalEndpoint : "(same as public)",
       hasCredentials: !!accessKeyId && !!secretAccessKey,
     });
   }
@@ -71,7 +76,7 @@ export class AwsStorageService extends StorageService {
     try {
       console.log("[AWS S3] Getting object stream for:", { bucket: this.bucket, key });
       const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
-      const response = await this.s3Client.send(command);
+      const response = await this.internalS3Client.send(command);
       if (!response.Body) throw new Error("No body returned from S3 object");
       const body = response.Body;
       if (body instanceof Readable) return body;
@@ -91,7 +96,7 @@ export class AwsStorageService extends StorageService {
       const command = new PutObjectCommand({
         Bucket: this.bucket, Key: key, Body: file, ContentType: contentType,
       });
-      await this.s3Client.send(command);
+      await this.internalS3Client.send(command);
       return { message: "File uploaded successfully" };
     } catch (error) {
       console.error("[AWS S3] Error uploading file:", error);
@@ -102,7 +107,7 @@ export class AwsStorageService extends StorageService {
   async listObjects(prefix: string): Promise<any[]> {
     try {
       const command = new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix });
-      const response = await this.s3Client.send(command);
+      const response = await this.internalS3Client.send(command);
       return response.Contents || [];
     } catch (error) {
       console.error("[AWS S3] Error listing objects:", error);

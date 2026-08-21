@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Plus } from "lucide-react";
 import axiosInstance from "@/utils/Axios/AxiosInstance";
 import {
   Table,
@@ -16,6 +16,7 @@ import EmptyState from "@/components/common/EmptyState";
 import ErrorComponent from "@/components/common/ErrorComponent";
 import VirtualizedTable from "@/components/common/VirtualizedTable";
 import Pagination from "./Pagination";
+import CreateOpeningModal from "./CreateOpeningModal";
 
 const formatDate = (iso) => {
   if (!iso) return "—";
@@ -85,6 +86,7 @@ export default function OpeningsLayout() {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const fetchOpenings = useCallback(async (page = 1) => {
     setLoading(true);
@@ -110,15 +112,29 @@ export default function OpeningsLayout() {
   const handlePageChange = (newPage) => fetchOpenings(newPage);
   const handleRowClick = (openingId) => router.push(`/hiring-manager/openings/${openingId}`);
 
+  const handleCreateSuccess = (newOpening) => {
+    // Refresh the openings list
+    fetchOpenings(1);
+  };
+
   return (
     <div className="flex h-screen bg-background px-2">
       <div className="flex-1 overflow-y-auto">
         <div className="p-4">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground">My Openings</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Review candidate profiles and manage shortlist decisions.
-            </p>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">My Openings</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Review candidate profiles and manage shortlist decisions.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Create Opening
+            </button>
           </div>
 
           {error && (
@@ -215,6 +231,13 @@ export default function OpeningsLayout() {
           )}
         </div>
       </div>
+
+      {/* Create Opening Modal */}
+      <CreateOpeningModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   );
 }
