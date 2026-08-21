@@ -11,51 +11,31 @@ export const logout = asyncHandler(
       // Retrieve refresh token from cookies or header.
       const refreshToken =
         req.cookies.refresh_token || req.headers.authorization?.split(" ")[1];
-      if (!refreshToken) {
-        console.log("⚠️ No refresh token found, already logged out.");
-        res
-          .status(400)
-          .json({ message: "No refresh token found, already logged out" });
-        return;
-      }
-      // Assuming that authentication middleware attaches req.user:
-      // Use type assertion to access req.user
-      const user = (req as any).user;
-      console.log("Logging out user:", user);
 
-      // Check if this is a Keycloak user or OAuth user.
-      if (user && user.provider === "KEYCLOAK") {
-        // For Keycloak users, retrieve the client secret and call Keycloak logout endpoint.
-        const adminToken = await getAdminToken();
-        const clientSecret = await getClientSecret(adminToken);
-        if (!clientSecret) {
-          console.error("Error: CLIENT_SECRET could not be retrieved.");
-          res.status(500).json({ message: "Failed to retrieve CLIENT_SECRET" });
-          return;
-        }
+      // Try to logout from Keycloak if we have a refresh token
+      if (refreshToken) {
         try {
-          await axios.post(
-            `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout`,
-            new URLSearchParams({
-              client_id: process.env.KEYCLOAK_CLIENT_ID!,
-              client_secret: clientSecret,
-              refresh_token: refreshToken,
-            }),
-            { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-          );
-          console.log("Keycloak session invalidated for user.");
+          const user = (req as any).user;
+          if (user && user.provider === "KEYCLOAK") {
+            const adminToken = await getAdminToken();
+            const clientSecret = await getClientSecret(adminToken);
+            if (clientSecret) {
+              await axios.post(
+                `${process.env.KEYCLOAK_URL}/realms/${process.env.KEYCLOAK_REALM}/protocol/openid-connect/logout`,
+                new URLSearchParams({
+                  client_id: process.env.KEYCLOAK_CLIENT_ID!,
+                  client_secret: clientSecret,
+                  refresh_token: refreshToken,
+                }),
+                { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+              );
+              console.log("Keycloak session invalidated for user.");
+            }
+          }
         } catch (error: any) {
-          // Type as 'any' for axios error
-          console.error(
-            "Keycloak logout request failed:",
-            error.response?.data || error.message
-          );
-          res.status(500).json({ message: "Error logging out of Keycloak" });
-          return;
+          // Log but don't fail - we still want to clear cookies
+          console.error("Keycloak logout request failed (non-fatal):", error.message);
         }
-      } else {
-        // For OAuth users (Google/Microsoft), you may not need to call an external logout endpoint.
-        console.log("OAuth user logout: just clearing cookies.");
       }
 
       // Clear cookies securely
@@ -77,7 +57,20 @@ export const logout = asyncHandler(
       return;
     } catch (error) {
       console.error("Logout error:", error);
-      res.status(500).json({ message: "Error logging out" });
+      // Even on error, clear cookies
+      res.clearCookie("access_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+      });
+      res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+      });
+      res.status(200).json({ message: "Logged out successfully" });
       return;
     }
   }

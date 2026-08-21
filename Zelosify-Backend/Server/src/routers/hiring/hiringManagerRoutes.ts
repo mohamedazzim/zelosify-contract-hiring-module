@@ -6,6 +6,7 @@ import {
   getOpeningProfiles,
   shortlistProfile,
   rejectProfile,
+  createOpening,
 } from "../../controllers/hiring/hiringProfileController.js";
 
 const router = Router();
@@ -25,6 +26,12 @@ router.use(authorizeRole("HIRING_MANAGER") as RequestHandler);
  * Returns paginated openings assigned to the authenticated Hiring Manager.
  */
 router.get("/openings", getManagerOpenings as RequestHandler);
+
+/**
+ * POST /api/v1/hiring-manager/openings
+ * Creates a new opening for the authenticated Hiring Manager.
+ */
+router.post("/openings", createOpening as RequestHandler);
 
 /**
  * GET /api/v1/hiring-manager/openings/:id/profiles

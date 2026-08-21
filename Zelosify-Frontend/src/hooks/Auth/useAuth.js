@@ -130,10 +130,8 @@ const useAuth = () => {
       // Dispatch signOut and wait for it to complete
       const result = await dispatch(signOut()).unwrap();
 
-      // Only close the confirmation dialog if not explicitly skipped
-      if (!skipConfirmationClose) {
-        dispatch(closeSignoutConfirmation());
-      }
+      // Close the confirmation dialog
+      dispatch(closeSignoutConfirmation());
 
       // Navigate to login page
       router.push("/user");
@@ -142,9 +140,7 @@ const useAuth = () => {
       console.error("Logout error:", error);
 
       // Even if there's an error, close the dialog to avoid keeping it open
-      if (!skipConfirmationClose) {
-        dispatch(closeSignoutConfirmation());
-      }
+      dispatch(closeSignoutConfirmation());
 
       throw error;
     } finally {
