@@ -5,6 +5,7 @@ import { RecommendationStatus } from "@prisma/client";
 import { AgentOrchestrator } from "./agent/agentOrchestrator.js";
 import { GroqLlmClient } from "./client/groqClient.js";
 import { GeminiLlmClient } from "./client/geminiClient.js";
+import { NvidiaLlmClient } from "./client/nvidiaClient.js";
 import { ToolRegistry } from "./tools/toolRegistry.js";
 import { aiLogger } from "./logger/aiLogger.js";
 import type { AgentExecutionResult } from "./types/llmTypes.js";
@@ -51,15 +52,19 @@ export class RecommendationService {
       if (opts.orchestrator) {
         this.orchestrator = opts.orchestrator;
       } else {
-        // Try Gemini first, fall back to Groq
+        // Try NVIDIA first, then Gemini, then Groq
         let client: any;
         try {
-          client = new GeminiLlmClient();
+          client = new NvidiaLlmClient();
         } catch {
           try {
-            client = new GroqLlmClient();
+            client = new GeminiLlmClient();
           } catch {
-            client = null;
+            try {
+              client = new GroqLlmClient();
+            } catch {
+              client = null;
+            }
           }
         }
         this.orchestrator = new AgentOrchestrator({
@@ -376,8 +381,8 @@ export class RecommendationService {
       return false;
     }
 
-    // 6b. Handle GROQ_API_ERROR or GEMINI_API_ERROR with deterministic fallback
-    if (!result!.success && (result!.errorCode === "GROQ_API_ERROR" || result!.errorCode === "GEMINI_API_ERROR")) {
+    // 6b. Handle LLM API errors with deterministic fallback
+    if (!result!.success && (result!.errorCode === "GROQ_API_ERROR" || result!.errorCode === "GEMINI_API_ERROR" || result!.errorCode === "NVIDIA_API_ERROR" || result!.errorCode === "MAX_TURNS_EXCEEDED")) {
       aiLogger.warn("RECOMMENDATION_GROQ_API_ERROR_FALLBACK", {
         profileId,
         errorCode: result!.errorCode,
