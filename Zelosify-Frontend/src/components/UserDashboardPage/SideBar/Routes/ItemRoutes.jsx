@@ -7,6 +7,7 @@ import {
   Scale3DIcon,
   Frown,
   Briefcase,
+  ClipboardList,
 } from "lucide-react";
 import { MdDataUsage } from "react-icons/md";
 
@@ -17,11 +18,9 @@ const getOverviewItemsByRole = (role) => {
     case "VENDOR_MANAGER":
       return [
         {
-          title: "Smile",
-          href: "#",
-          icon: Smile,
-          hasSubmenu: true,
-          submenu: [{ title: "Sad", href: "/user", icon: Frown }],
+          title: "Requests",
+          href: "/vendor-requests",
+          icon: ClipboardList,
         },
       ];
 

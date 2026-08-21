@@ -37,6 +37,11 @@ export class AwsStorageService extends StorageService {
       credentials: { accessKeyId, secretAccessKey },
       endpoint,
       forcePathStyle: true,
+      // AWS SDK v3.700+ defaults to adding x-amz-checksum-* query params to
+      // presigned URLs (WHEN_SUPPORTED). MinIO validates those checksums and
+      // rejects the placeholder value, causing SignatureDoesNotMatch. Restore
+      // the legacy behavior: only send checksums when the caller requires them.
+      requestChecksumCalculation: "WHEN_REQUIRED",
     });
 
     this.bucket = bucketName;
