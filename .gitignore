@@ -84,6 +84,8 @@ scratchpad/
 temp-token.json
 admin-token.json
 token.txt
+cookies*.txt
+screenshots/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

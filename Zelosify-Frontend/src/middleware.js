@@ -48,8 +48,8 @@ export function middleware(request) {
     console.log("User Role = ", userRole);
     switch (userRole) {
       case "VENDOR_MANAGER":
-        console.log("Redirecting VENDOR_MANAGER to /user");
-        return NextResponse.redirect(new URL("/user", request.url));
+        console.log("Redirecting VENDOR_MANAGER to /vendor-requests");
+        return NextResponse.redirect(new URL("/vendor-requests", request.url));
 
       case "BUSINESS_USER":
         console.log("Redirecting BUSINESS_USER to /business-user/digital-initiative");
